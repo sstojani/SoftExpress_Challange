@@ -1,0 +1,168 @@
+﻿@{
+        Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+
+    h1 {
+        font-weight: bold;
+        font-size: 2.5rem;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .card {
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        border: none;
+        border-radius: 10px;
+    }
+
+    .card-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    #filterForm input {
+        min-width: 150px; /* Ensures inputs don't shrink too much */
+    }
+
+    #filterForm .btn {
+        white-space: nowrap; /* Prevents text from breaking into multiple lines */
+    }
+</style>
+
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Dashboard i raporteve</h1>
+
+<form id="filterForm" class="d-flex align-items-center gap-2 mb-5">
+    <div class="flex-grow-1">
+        <input type="text" class="form-control" name="rajoni" id="rajoni" placeholder="Rajoni" />
+    </div>
+    <div class="flex-grow-1">
+        <input type="text" class="form-control" name="aplikacioni" id="aplikacioni" placeholder="Aplikacioni" />
+    </div>
+    <div class="flex-grow-1">
+        <input type="text" class="form-control" name="llojiIPajisjes" id="llojiIPajisjes" placeholder="Lloji i Pajisjes" />
+    </div>
+    <div class="flex-grow-1">
+        <input type="date" class="form-control" name="startDate" id="startDate" />
+    </div>
+    <div class="flex-grow-1">
+        <input type="date" class="form-control" name="endDate" id="endDate" />
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary">Filtro</button>
+    </div>
+</form>
+
+    <!-- Dashboard Charts Section -->
+    <div class="row g-3">
+        <!-- Line Chart -->
+        <div class="col-md-8">
+            <div class="card p-3">
+                <h5 class="card-title">Website Visits</h5>
+                <small>(+43%) than last year</small>
+                <canvas id="regionChart"></canvas>
+            </div>
+        </div>
+        <!-- Pie Chart -->
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h5 class="card-title">Current Visits</h5>
+                <canvas id="applicationChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Initialize the charts with empty data
+        var regionChart, applicationChart;
+
+        $(document).ready(function () {
+            // Fetch report data on page load
+            fetchReportData();
+
+            // Handle the form submission (filtering)
+            $("#filterForm").submit(function (e) {
+                e.preventDefault();
+                fetchReportData();
+            });
+        });
+
+        function fetchReportData() {
+            // Get filter values
+            var rajoni = $('#rajoni').val();
+            var aplikacioni = $('#aplikacioni').val();
+            var llojiIPajisjes = $('#llojiIPajisjes').val();
+            var startDate = $('#startDate').val();
+            var endDate = $('#endDate').val();
+
+            // Make AJAX request to fetch data from the API
+            $.ajax({
+                url: '/api/reports',
+                data: {
+                    rajoni: rajoni,
+                    aplikacioni: aplikacioni,
+                    llojiIPajisjes: llojiIPajisjes,
+                    startDate: startDate,
+                    endDate: endDate
+                },
+                success: function (data) {
+                    // Update charts with the data
+                    updateCharts(data);
+                }
+            });
+        }
+
+        function updateCharts(data) {
+            // Destroy existing charts if they exist
+            if (regionChart) regionChart.destroy();
+            if (applicationChart) applicationChart.destroy();
+
+            // Prepare data for region chart (bar chart)
+            var regionLabels = data.groupedByRegion.map(function (item) { return item.label; });
+            var regionCounts = data.groupedByRegion.map(function (item) { return item.count; });
+
+            // Prepare data for application chart (pie chart)
+            var appLabels = data.groupedByApplication.map(function (item) { return item.label; });
+            var appCounts = data.groupedByApplication.map(function (item) { return item.count; });
+
+            // Create region chart
+            regionChart = new Chart($('#regionChart'), {
+                type: 'bar',
+                data: {
+                    labels: regionLabels,
+                    datasets: [{
+                        label: 'Website Visits by Region',
+                        data: regionCounts,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                }
+            });
+
+            // Create application chart
+            applicationChart = new Chart($('#applicationChart'), {
+                type: 'pie',
+                data: {
+                    labels: appLabels,
+                    datasets: [{
+                        label: 'Current Visits by Application',
+                        data: appCounts,
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                    }]
+                }
+            });
+        }
+    </script>
+}

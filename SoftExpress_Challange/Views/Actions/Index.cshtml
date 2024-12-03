@@ -1,0 +1,136 @@
+﻿@using SoftExpress_Challange.ViewModels;
+@model StatistikaIndexViewModel;
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .form-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .table-container {
+        border-radius: 10px;
+        background-color: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+    }
+
+    .table th {
+        white-space: nowrap;
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    .create-btn {
+        position: absolute;
+        bottom: 70px;
+        right: 20px;
+        z-index: 999;
+        padding: 15px 25px; 
+        font-size: 18px; 
+        border-radius: 8px; 
+        min-width: 200px; 
+    }
+
+    .table-container {
+        position: relative;
+        margin-bottom: 90px; 
+    }
+</style>
+
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Statistika List</h1>
+
+    <div class="row mb-3">
+        <div class="col-md-2">
+            <button class="btn btn-success create-btn" onclick="redirectToCreate()">Create New Statistika</button>
+        </div>
+    </div>
+
+    <!-- Search Bar Row (Above Filters) -->
+    <div class="row mb-3">
+        <div class="col-md-6 col-lg-4">
+            <input type="text" class="form-control" name="search" placeholder="Search ..." />
+        </div>
+    </div>
+
+    <!-- Filter Form (Below Search Bar) -->
+    <form method="get" action="@Url.Action("Index", "Actions")" class="row g-2 mb-4">
+        <div class="col-md-2">
+            <input type="text" class="form-control" name="rajoni" placeholder="Rajoni" value="@Model.Rajoni" />
+        </div>
+        <div class="col-md-3">
+            <input type="text" class="form-control" name="llojiIPajisjes" placeholder="Lloji i Pajisjes" value="@Model.LlojiIPajisjes" />
+        </div>
+        <div class="col-md-2">
+            <input type="text" class="form-control" name="aplikacioni" placeholder="Aplikacioni" value="@Model.Aplikacioni" />
+        </div>
+        <div class="col-md-3">
+            <input type="date" class="form-control" name="dataOra" value="@Model.DataOra?.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary" style="width:205px">Ruaj</button>
+        </div>
+    </form>
+
+    <!-- Table Section -->
+    <div class="table-container">
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                    <th>Perdoruesi</th>
+                    <th>Rajoni</th>
+                    <th>Lloji i Pajisjes</th>
+                    <th>Aplikacioni</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Statistikas != null && Model.Statistikas.Any())
+                {
+                    foreach (var statistika in Model.Statistikas)
+                    {
+                        <tr>
+                            <td>@statistika.Username</td>
+                            <td>@statistika.Rajoni</td>
+                            <td>@statistika.Lloji_I_Pajisjes</td>
+                            <td>@statistika.Aplikacioni</td>
+                            <td>@statistika.DataOra.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">No records found</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+                Rows per page:
+                <select class="form-select d-inline-block" style="width: auto;">
+                    <option>5</option>
+                    <option>10</option>
+                    <option>20</option>
+                </select>
+            </div>
+            <div>
+                <small>1–5 of 9</small>
+                <button class="btn btn-outline-secondary btn-sm">&lt;</button>
+                <button class="btn btn-outline-secondary btn-sm">&gt;</button>
+            </div>
+        </div>
+    </div>
+</div>
